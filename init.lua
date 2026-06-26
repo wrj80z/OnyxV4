@@ -21,7 +21,7 @@ local lplr = playersService.LocalPlayer
 local function downloaderFUNC()
     if getgenv().downloader then return getgenv.downloader end
     local d = Instance.new('TextLabel', Instance.new('ScreenGui', gethui and gethui() or cloneref(game:GetService('CoreGui') or lplr.PlayerGui)))
-    d.Size = Udim2.fromScale(1,40)
+    d.Size = UDim2.fromScale(1,40)
     d.BackgroundTransparency = 1
     d.TextStrokeTransparency = 0
     d.TextSize = 20
