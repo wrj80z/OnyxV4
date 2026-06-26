@@ -1,6 +1,6 @@
 --!nocheck
 local Headers = ... or {}
-Headers.Key = key or Headers.Key or 'NIGGA-KEY'
+Headers.Key = rawget(getfenv(), "key") or Headers.Key or "NIGGA-KEY"
 
 local cloneref = cloneref or function(obj)
     return obj
@@ -19,18 +19,25 @@ local playersService = cloneref(game:GetService('Players'))
 local lplr = playersService.LocalPlayer
 
 local function downloaderFUNC()
-    if getgenv().downloader then return getgenv.downloader end
-    local d = Instance.new('TextLabel', Instance.new('ScreenGui', gethui and gethui() or cloneref(game:GetService('CoreGui') or lplr.PlayerGui)))
-    d.Size = UDim2.fromScale(1,40)
+    if getgenv().downloader then
+        return getgenv().downloader
+    end
+    local parent = gethui and gethui() or cloneref(game:GetService("CoreGui"))
+    local gui = Instance.new("ScreenGui")
+    gui.Parent = parent
+    local d = Instance.new("TextLabel")
+    d.Parent = gui
+    d.Size = UDim2.new(1, 0, 0, 40)
     d.BackgroundTransparency = 1
     d.TextStrokeTransparency = 0
     d.TextSize = 20
     d.TextColor3 = Color3.new(1,1,1)
     d.Font = Enum.Font.Arial
-    d.Text = ''
-    getgenv.downloader = d
-    return (d or nil)
+    d.Text = ""
+    getgenv().downloader = d
+    return d
 end
+
 local downloader = downloaderFUNC()
 
 local function downloadFile(path, func)
