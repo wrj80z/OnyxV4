@@ -105,6 +105,4 @@ if not shared.VapeDeveloper then
 end
 
 downloader.Text = ''
-local dwlmain, dwlres = pcall(downloadFile, 'onyx/main.lua')
-print(dwlmain, dwlres)
-return loadstring(dwlres, 'main')(Headers)
+return loadstring(downloadFile('onyx/main.lua'), 'main')(Headers)
