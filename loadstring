@@ -1,0 +1,1 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/wrj80z/OnyxV4/main/init.lua", true))()
