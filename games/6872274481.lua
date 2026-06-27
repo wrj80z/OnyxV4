@@ -1007,7 +1007,6 @@ run(function()
 		WarlockTarget = getproto(Knit.Controllers.WarlockStaffController.KnitStart, 2) or function() end
 	}
 
-	local packages = httpService:JSONDecode(downloadFile('catrewrite/profiles/packages.json'))	
 	local function dumpRemote(tab)
 		if not tab then return '' end
 		local ind
@@ -1022,9 +1021,6 @@ run(function()
 
 	for i, v in remoteNames do
 		local remote = dumpRemote(debug.getconstants(v))
-		if remote == '' and packages.remotes[i] then
-			remote = packages.remotes[i]
-		end
 		if remote == '' then
 			notif('Vape', 'Failed to grab remote ('..i..')', 10, 'alert')
             task.wait(2)
