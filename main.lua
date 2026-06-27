@@ -1,6 +1,6 @@
 --!nocheck
 local Headers = ... or {}
-Headers.Key = key or Headers.Key or 'NIGGA-KEY'
+Headers.Key = Headers.Key or rawget(getfenv(), "key") or "NIGGA-KEY"
 repeat task.wait() until game:IsLoaded()
 if shared.vape then shared.vape:Uninject() end
 local cloneref = cloneref or function(obj)
@@ -15,7 +15,7 @@ end
 local delfile = delfile or function(file)
     writefile(file, '')
 end
-local clonefunction or clonefunction or function(func)
+local clonefunction = clonefunction or function(func)
     return (typeof(func) == 'function' and func or nil)
 end
 
@@ -45,7 +45,7 @@ local direct = function()
             invite = {code = '2E92Smnx4W'},
             code = '2E92Smnx4W'
         },
-        cmd = 'INVITE_BROSWER'
+        cmd = 'INVITE_BROWSER'
     })
 
     local function req()
@@ -85,7 +85,7 @@ local function downloadFile(path, func)
         local suc, res =  pcall(function()
             return game:HttpGet(`https://raw.githubusercontent.com/wrj80z/OnyxV4/{readfile('onyx/profiles/commit.txt')}/{select(1, path:gsub('onyx/', ''))}`, true)
         end)
-        if not suc or res:find('404') then
+        if not suc or res == '404: Not Found' then
             error(res)
         end
         if path:find('.lua') then
@@ -120,8 +120,7 @@ local function finishLoading()
                     local key = '_key'
                     print(key)
                 else
-                    loadstring(game:HttpGet("https://raw.githubusercontent.com/wrj80z/OnyxV4/main/init.lua", 'init')(config)
-                    local key = '_key'
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/wrj80z/OnyxV4/main/init.lua", true))(config)                    local key = '_key'
                     print(key)
                     -- todo make it get to the api w key
                 end
@@ -137,7 +136,7 @@ local function finishLoading()
 				tpScript = 'shared.VapeDeveloper = true\n'..tpScript
 			end
 			if shared.VapeCustomProfile then
-				tpScript = 'shared.VapeCustomProfile = "'..shared.VapeCustomProfile..'"\n'..teleportScript
+				tpScript = 'shared.VapeCustomProfile = "'..shared.VapeCustomProfile..'"\n'..tpScript
 			end
 			queue_on_teleport(tpScript)
         end
