@@ -181,6 +181,8 @@ if not isfile('onyx/profiles/commit.txt') then
 end
 
 vape = loadstring(downloadFile('onyx/guis/'..gui..'.lua'), 'gui')(Headers)
+print(gui)
+print(vape)
 shared.vape = vape
 
 if not shared.VapeIndependent then
