@@ -5341,7 +5341,7 @@ end
 
 function mainapi:CreateNotification(title, text, duration, type)
 	if not self.Notifications.Enabled then return end
-	if Headers
+	if Headers.Closet then return end
 	task.delay(cloneref(game:GetService('Players')).LocalPlayer:GetNetworkPing(), function()
 		if self.ThreadFix then
 			setthreadidentity(8)
