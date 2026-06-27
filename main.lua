@@ -143,7 +143,7 @@ local function finishLoading()
     if not shared.vapereload then
         if not vape.Categories then return end
         if vape.Categories.Main.Options['GUID bind indicator'].Enabled then
-            if getgenv().role:find('HWID') then
+            if getgenv().role == 'HWID-Mismatch' then
                 vape:CreateNotification('Onyx', 'HWID MISMATCH?, Go to the script panel and reset your hwid.', 30, 'warning')
                 getgenv().role = ''
                 task.wait(0.1 + lplr:GetNetworkPing())
@@ -171,8 +171,6 @@ if not isfile('onyx/profiles/commit.txt') then
 end
 
 vape = loadstring(downloadFile('onyx/guis/'..gui..'.lua'), 'gui')(Headers)
-print(gui)
-print(vape)
 shared.vape = vape
 
 if not shared.VapeIndependent then
