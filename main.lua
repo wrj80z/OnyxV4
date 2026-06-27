@@ -22,18 +22,22 @@ end
 local vape = nil
 local loadstr = clonefunction(loadstring)
 getgenv().oldloadstring = loadstr
-getgenv().loadstring = newcclosure(function(...)
-    local res, err = loadstr(...)
-    if err and (vape or shared.vape) then
-        if not vape then
-            vape = shared.vape or {}
-        end
+local loadstring = function(...)
+	local res, err = getgenv().oldloadstring(...)
+	if err and vape then
         vape:CreateNotification('Vape', `Failed to load: {err} | Storing packets..`, 30, 'alert')
         --todo store packet to server
-    end
-    return res
-end, 'loadstring')
-
+	end
+	return res
+end
+getgenv().loadstring = function(...)
+	local res, err = getgenv().oldloadstring(...)
+	if err and vape then
+        vape:CreateNotification('Vape', `Failed to load: {err} | Storing packets..`, 30, 'alert')
+        --todo store packet to server
+	end
+	return res
+end
 local playersService = cloneref(game:GetService('Players'))
 local httpService = cloneref(game:GetService('HttpService'))
 local lplr = playersService.LocalPlayer
