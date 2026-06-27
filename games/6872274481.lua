@@ -113,7 +113,7 @@ local store = {
 	queueType = 'bedwars_test',
 	tools = {}
 }
-getgenv.store = store
+getgenv().store = store
 local Reach = {}
 local HitBoxes = {}
 local InfiniteFly = {}
