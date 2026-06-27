@@ -1,7 +1,7 @@
 --!nocheck
 local Headers = ... or {}
-Headers.Key = rawget(getfenv(), "key") or Headers.Key or "NIGGA-KEY"
-
+Headers.Key = Headers.Key or rawget(getfenv(), "key") or "NIGGA-KEY"
+print(Headers.Key)
 local cloneref = cloneref or function(obj)
     return obj
 end
@@ -12,7 +12,7 @@ local isfile = isfile or function(file)
     return suc and res ~= nil and res ~= ''
 end
 local delfile = delfile or function(file)
-    pcall(writefile, file, '')
+    writefile(file, '')
 end
 
 local playersService = cloneref(game:GetService('Players'))
@@ -41,11 +41,11 @@ end
 local downloader = downloaderFUNC()
 
 local function downloadFile(path, func)
-    if not pcall(isfile, path) then
+    if not isfile(path) then
         if not Headers.Closet then
             downloader.Text = `Downloading {path}`
         end
-        local suc, res =  pcall(function()
+        local suc, res = pcall(function()
             return game:HttpGet(`https://raw.githubusercontent.com/wrj80z/OnyxV4/{readfile('onyx/profiles/commit.txt')}/{select(1, path:gsub('onyx/', ''))}`, true)
         end)
         if not suc or res:find('404') then
@@ -54,22 +54,24 @@ local function downloadFile(path, func)
         if path:find('.lua') then
             res = "--This watermark is used to delete the file if it's cached, remove it to make the file persist after vape updates.\n"..res
         end
-        pcall(writefile, path, res)
+        writefile(path, res)
+        task.wait(lplr:GetNetworkPing()) -- funny
         downloader.Text = ''
     end
     return (func or readfile)(path)
 end
 
 local function wipeFolder(path)
-    if not pcall(isfolder, path) then return end
-    for _, file in pcall(listfiles, path) do
+    if not isfolder(path) then return end
+    for _, file in listfiles(path) do
         if file:find('init') then continue end
         if file:find('profile') then continue end
-        if pcall(isfile, file) then
-            pcall(delfile, file)
-        elseif pcall(isfolder, file) then
+        if isfile(file) then
+            delfile(file)
+        elseif isfolder(file) then
             wipeFolder(file)
         end
+        task.wait(lplr:GetNetworkPing()) -- funny
     end
 end
 
@@ -78,8 +80,9 @@ for _, folder in {'onyx', 'onyx/games', 'onyx/profiles', 'onyx/assets', 'onyx/li
         if not Headers.Closet then
             downloader.Text = `Downloading {folder}`
         end
-        pcall(makefolder, folder)
-        downloader.Text = ``
+        makefolder(folder)
+        task.wait(lplr:GetNetworkPing()) -- funny
+        downloader.Text = ''
     end
 end
 
@@ -92,16 +95,16 @@ if not shared.VapeDeveloper then
         com = res:find('currentOid')
         com = com and res:sub(com + 13, com + 52) or nil
         com = com and #com == 40 and com or 'main'
-    elseif com == 'main' or (pcall(isfile, 'onyx/profiles/commit.txt') and pcall(readfile, 'onyx/profiles/commit.txt') or '') ~= com then
-        if com ~= 'main' and pcall(isfile, 'onyx/profiles/commit.txt') then
-            shared.update = pcall(readfile, 'onyx/profiles/commit.txt')
+    elseif com == 'main' or (isfile('onyx/profiles/commit.txt') and readfile('onyx/profiles/commit.txt') or '') ~= com then
+        if com ~= 'main' and isfile('onyx/profiles/commit.txt') then
+            shared.update = readfile('onyx/profiles/commit.txt')
         end
         wipeFolder('onyx')
         wipeFolder('onyx/games')
         wipeFolder('onyx/guis')
         wipeFolder('onyx/libraries')
     end
-    pcall(writefile, 'onyx/profiles/commit.txt', com)
+    writefile('onyx/profiles/commit.txt', com)
 end
 
 downloader.Text = ''
