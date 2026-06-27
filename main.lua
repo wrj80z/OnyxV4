@@ -13,12 +13,11 @@ local isfile = isfile or function(file)
     return suc and res ~= nil and res ~= ''
 end
 local delfile = delfile or function(file)
-    pcall(writefile, file, '')
+    writefile(file, '')
 end
 local clonefunction or clonefunction or function(func)
     return (typeof(func) == 'function' and func or nil)
 end
-
 
 local vape = nil
 local loadstr = clonefunction(loadstring)
@@ -79,7 +78,7 @@ end)
 local downloader = getgenv().downloader
 
 local function downloadFile(path, func)
-    if not pcall(isfile, path) then
+    if not isfile(path) then
         if not Headers.Closet and downloader then
             downloader.Text = `Downloading {path}`
         end
@@ -92,7 +91,8 @@ local function downloadFile(path, func)
         if path:find('.lua') then
             res = "--This watermark is used to delete the file if it's cached, remove it to make the file persist after vape updates.\n"..res
         end
-        pcall(writefile, path, res)
+        writefile(path, res)
+        task.wait(lplr:GetNetworkPing()) -- funny
         if downloader then
             downloader.Text = ''
         end
