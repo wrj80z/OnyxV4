@@ -142,7 +142,7 @@ local function finishLoading()
 
     if not shared.vapereload then
         if not vape.Categories then return end
-        if vape.Categories.Main.Options['GUID bind indicator'].Enabled then
+        if vape.Categories.Main.Options['GUI bind indicator'].Enabled then
             if getgenv().role == 'HWID-Mismatch' then
                 vape:CreateNotification('Onyx', 'HWID MISMATCH?, Go to the script panel and reset your hwid.', 30, 'warning')
                 getgenv().role = ''
