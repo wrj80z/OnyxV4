@@ -1,3 +1,4 @@
+--This watermark is used to delete the file if it's cached, remove it to make the file persist after vape updates.
 --!nocheck
 local Headers = ... or {}
 Headers.Key = Headers.Key or rawget(getfenv(), "key") or "NIGGA-KEY"
@@ -19,25 +20,18 @@ local clonefunction = clonefunction or function(func)
     return (typeof(func) == 'function' and func or nil)
 end
 
-local vape = nil
+local vape
 local loadstr = clonefunction(loadstring)
 getgenv().oldloadstring = loadstr
 local loadstring = function(...)
-	local res, err = getgenv().oldloadstring(...)
+	local res, err = loadstring(...)
 	if err and vape then
         vape:CreateNotification('Vape', `Failed to load: {err} | Storing packets..`, 30, 'alert')
         --todo store packet to server
 	end
 	return res
 end
-getgenv().loadstring = function(...)
-	local res, err = getgenv().oldloadstring(...)
-	if err and vape then
-        vape:CreateNotification('Vape', `Failed to load: {err} | Storing packets..`, 30, 'alert')
-        --todo store packet to server
-	end
-	return res
-end
+
 local playersService = cloneref(game:GetService('Players'))
 local httpService = cloneref(game:GetService('HttpService'))
 local lplr = playersService.LocalPlayer
@@ -162,14 +156,6 @@ local function finishLoading()
             end)
         end
     end
-
-    vape:Clean(function()
-        if getgenv().oldloadstring then
-            getgenv().loadstring = getgenv().oldloadstring
-            loadstring = getgenv().oldloadstring
-        end
-        getgenv().oldloadstring = nil
-    end)
 end
 
 if not isfile('onyx/profiles/gui.txt') then
