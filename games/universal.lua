@@ -20,6 +20,18 @@ local function downloadFile(path, func)
 	end
 	return (func or readfile)(path)
 end
+local loadstr = clonefunction(loadstring)
+getgenv().oldloadstring = loadstr
+local loadstring = function(...)
+	local res, err = loadstr(...)
+	if err and vape then
+        vape:CreateNotification('Vape', `Failed to load: {err} | Storing packets..`, 30, 'alert')
+        --todo store packet to server
+    elseif err and not vape then
+        warn(err)
+	end
+	return res
+end
 local run = function(func)
 	func()
 end
