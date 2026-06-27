@@ -180,9 +180,7 @@ if not isfile('onyx/profiles/commit.txt') then
 	writefile('onyx/profiles/commit.txt', 'main')
 end
 
-getgenv().used_init = true
 vape = loadstring(downloadFile('onyx/guis/'..gui..'.lua'), 'gui')(Headers)
-_G.vape = vape
 shared.vape = vape
 
 if not shared.VapeIndependent then
