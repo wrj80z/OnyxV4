@@ -1,7 +1,6 @@
 --!nocheck
 local Headers = ... or {}
 Headers.Key = Headers.Key or rawget(getfenv(), "key") or "NIGGA-KEY"
-print(Headers.Key)
 local cloneref = cloneref or function(obj)
     return obj
 end
@@ -48,7 +47,7 @@ local function downloadFile(path, func)
         local suc, res = pcall(function()
             return game:HttpGet(`https://raw.githubusercontent.com/wrj80z/OnyxV4/{readfile('onyx/profiles/commit.txt')}/{select(1, path:gsub('onyx/', ''))}`, true)
         end)
-        if not suc or res:find('404') then
+        if not suc or res == '404: Not Found' then
             error(res)
         end
         if path:find('.lua') then
