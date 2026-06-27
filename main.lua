@@ -19,7 +19,7 @@ local clonefunction = clonefunction or function(func)
     return (typeof(func) == 'function' and func or nil)
 end
 
-local vape
+local vape = nil
 local loadstr = clonefunction(loadstring)
 getgenv().oldloadstring = loadstr
 local loadstring = function(...)
@@ -32,7 +32,6 @@ local loadstring = function(...)
 	end
 	return res
 end
-
 local playersService = cloneref(game:GetService('Players'))
 local httpService = cloneref(game:GetService('HttpService'))
 local lplr = playersService.LocalPlayer
@@ -172,6 +171,8 @@ if not isfile('onyx/profiles/commit.txt') then
 end
 
 vape = loadstring(downloadFile('onyx/guis/'..gui..'.lua'), 'gui')(Headers)
+print(gui)
+print(vape)
 shared.vape = vape
 
 if not shared.VapeIndependent then
