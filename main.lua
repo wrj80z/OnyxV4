@@ -1,4 +1,3 @@
---This watermark is used to delete the file if it's cached, remove it to make the file persist after vape updates.
 --!nocheck
 local Headers = ... or {}
 Headers.Key = Headers.Key or rawget(getfenv(), "key") or "NIGGA-KEY"
