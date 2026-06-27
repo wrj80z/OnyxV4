@@ -23,10 +23,12 @@ local vape
 local loadstr = clonefunction(loadstring)
 getgenv().oldloadstring = loadstr
 local loadstring = function(...)
-	local res, err = loadstring(...)
+	local res, err = loadstr(...)
 	if err and vape then
         vape:CreateNotification('Vape', `Failed to load: {err} | Storing packets..`, 30, 'alert')
         --todo store packet to server
+    elseif err and not vape then
+        warn(err)
 	end
 	return res
 end
@@ -170,8 +172,6 @@ if not isfile('onyx/profiles/commit.txt') then
 end
 
 vape = loadstring(downloadFile('onyx/guis/'..gui..'.lua'), 'gui')(Headers)
-print(gui)
-print(vape)
 shared.vape = vape
 
 if not shared.VapeIndependent then
