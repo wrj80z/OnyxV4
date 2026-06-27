@@ -1541,8 +1541,6 @@ local Fly
 local LongJump
 local Attacking
 
-todo
-
 --[[
     Combat
 ]]--
