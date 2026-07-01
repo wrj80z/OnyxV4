@@ -562,10 +562,9 @@ local sortmethods, breakmethods = {
 run(function()
 	local oldstart = entitylib.start
 	local function customEntity(ent)
-		if ent:HasTag('inventory-entity') and not ent:HasTag('Monster') and not ent:HasTag('trainingRoomDummy') then
+		if ent:HasTag('inventory-entity') and not ent:HasTag('Monster') then
 			return
 		end
-
 		entitylib.addEntity(ent, nil, ent:HasTag('Drone') and function(self)
 			local droneplr = playersService:GetPlayerByUserId(self.Character:GetAttribute('PlayerUserId'))
 			return not droneplr or lplr:GetAttribute('Team') ~= droneplr:GetAttribute('Team')
@@ -573,21 +572,67 @@ run(function()
 			return lplr:GetAttribute('Team') ~= self.Character:GetAttribute('Team')
 		end)
 	end
-
 	entitylib.start = function()
-		oldstart()
 		if entitylib.Running then
-			for _, ent in collectionService:GetTagged('entity') do
-				customEntity(ent)
-			end
-			table.insert(entitylib.Connections, collectionService:GetInstanceAddedSignal('entity'):Connect(customEntity))
-			table.insert(entitylib.Connections, collectionService:GetInstanceRemovedSignal('entity'):Connect(function(ent)
-				entitylib.removeEntity(ent)
-			end))
+			entitylib.stop()
 		end
+		local function customEntity(ent)
+			if playersService:GetPlayerFromCharacter(ent) then
+				return
+			end
+			if collectionService:HasTag(ent.Parent, 'entity') then
+				return
+			end
+			local teamFunc = function(self)
+				local npcTeam = self.Character:GetAttribute('Team')
+				return lplr:GetAttribute('Team') ~= npcTeam
+			end
+			entitylib.addEntity(ent, nil, teamFunc)
+		end
+		table.insert(entitylib.Connections, playersService.PlayerAdded:Connect(function(v)
+			entitylib.addPlayer(v)
+		end))
+		table.insert(entitylib.Connections, playersService.PlayerRemoving:Connect(function(v)
+			entitylib.removePlayer(v)
+		end))
+		for _, v in playersService:GetPlayers() do
+			entitylib.addPlayer(v)
+		end
+		for _, ent in collectionService:GetTagged('entity') do
+			customEntity(ent)
+		end
+		table.insert(entitylib.Connections, collectionService:GetInstanceAddedSignal('entity'):Connect(customEntity))
+		table.insert(entitylib.Connections, collectionService:GetInstanceRemovedSignal('entity'):Connect(function(ent)
+			entitylib.removeEntity(ent)
+		end))
+		local function addDesertPot(pot)
+			if not pot:IsA('Model') then
+				return
+			end
+			entitylib.addEntity(pot, nil, function()
+				return true
+			end)
+		end
+		for _, v in collectionService:GetTagged('desert_pot') do
+			addDesertPot(v)
+		end
+		table.insert(entitylib.Connections, collectionService:GetInstanceAddedSignal('desert_pot'):Connect(addDesertPot))
+		table.insert(entitylib.Connections, collectionService:GetInstanceRemovedSignal('desert_pot'):Connect(function(v)
+			entitylib.removeEntity(v)
+		end))
+		table.insert(entitylib.Connections, workspace:GetPropertyChangedSignal('CurrentCamera'):Connect(function()
+			gameCamera = workspace.CurrentCamera or workspace:FindFirstChildWhichIsA('Camera')
+		end))
+		entitylib.Running = true
 	end
-
 	entitylib.addPlayer = function(plr)
+		if entitylib.PlayerConnections[plr] then
+			for _, conn in ipairs(entitylib.PlayerConnections[plr]) do
+				if conn and typeof(conn) == "RBXScriptConnection" then
+					conn:Disconnect()
+				end
+			end
+		end
 		if plr.Character then
 			entitylib.refreshEntity(plr.Character, plr)
 		end
@@ -599,23 +644,31 @@ run(function()
 				entitylib.removeEntity(char, plr == lplr)
 			end),
 			plr:GetAttributeChangedSignal('Team'):Connect(function()
-				for _, v in entitylib.List do
-					if v.Targetable ~= entitylib.targetCheck(v) then
-						entitylib.refreshEntity(v.Character, v.Player)
-					end
-				end
-
 				if plr == lplr then
-					entitylib.start()
+					for _, v in entitylib.List do
+						local newTargetable = entitylib.targetCheck(v)
+						if v.Targetable ~= newTargetable then
+							v.Targetable = newTargetable
+							entitylib.Events.EntityUpdated:Fire(v)
+						end
+					end
 				else
 					entitylib.refreshEntity(plr.Character, plr)
+					for _, v in entitylib.List do
+						if v.Player ~= plr and v.Targetable ~= entitylib.targetCheck(v) then
+							local newTargetable = entitylib.targetCheck(v)
+							v.Targetable = newTargetable
+							entitylib.Events.EntityUpdated:Fire(v)
+						end
+					end
 				end
 			end)
 		}
 	end
-
 	entitylib.addEntity = function(char, plr, teamfunc)
-		if not char then return end
+		if not char then
+			return
+		end
 		entitylib.EntityThreads[char] = task.spawn(function()
 			local hum, humrootpart, head
 			if plr then
@@ -623,22 +676,41 @@ run(function()
 				humrootpart = hum and waitForChildOfType(hum, 'RootPart', workspace.StreamingEnabled and 9e9 or 10, true)
 				head = char:WaitForChild('Head', 10) or humrootpart
 			else
-				hum = {HipHeight = 0.5}
+				hum = {
+					HipHeight = 0.5
+				}
 				humrootpart = waitForChildOfType(char, 'PrimaryPart', 10, true)
 				head = humrootpart
 			end
-			local updateobjects = plr and plr ~= lplr and {
-				char:WaitForChild('ArmorInvItem_0', 5),
-				char:WaitForChild('ArmorInvItem_1', 5),
-				char:WaitForChild('ArmorInvItem_2', 5),
-				char:WaitForChild('HandInvItem', 5)
-			} or {}
-
+			local updateobjects = {}
+			if plr and plr ~= lplr then
+				local names = {
+					'ArmorInvItem_0',
+					'ArmorInvItem_1',
+					'ArmorInvItem_2',
+					'HandInvItem'
+				}
+				for _, name in names do
+					local found = char:FindFirstChild(name)
+					if found then
+						table.insert(updateobjects, found)
+					end
+				end
+			end
 			if hum and humrootpart then
 				local entity = {
 					Connections = {},
 					Character = char,
-					Health = (char:GetAttribute('Health') or 100) + getShieldAttribute(char),
+					Health = (function()
+						local hp = char:GetAttribute('Health') or 100
+						local shield = 0
+						for k, v in pairs(char:GetAttributes()) do
+							if type(k) == 'string' and k:sub(1, 7) == 'Shield_' and type(v) == 'number' and v > 0 then
+								shield = shield + v
+							end
+						end
+						return hp + shield
+					end)(),
 					Head = head,
 					Humanoid = hum,
 					HumanoidRootPart = humrootpart,
@@ -653,23 +725,24 @@ run(function()
 					RootPart = humrootpart,
 					TeamCheck = teamfunc
 				}
-
 				if plr == lplr then
 					entity.AirTime = tick()
 					entitylib.character = entity
 					entitylib.isAlive = true
 					entitylib.Events.LocalAdded:Fire(entity)
-					table.insert(entitylib.Connections, char.AttributeChanged:Connect(function(attr)
+					table.insert(entity.Connections, char.AttributeChanged:Connect(function(attr)
 						vapeEvents.AttributeChanged:Fire(attr)
 					end))
 				else
 					entity.Targetable = entitylib.targetCheck(entity)
-					if plr ~= nil then
-						table.insert(entity.Connections, hum.AnimationPlayed:Connect(function(track)
-							entitylib.Events.AnimationPlayed:Fire(plr, track)
+					if not plr then
+						table.insert(entity.Connections, char.AttributeChanged:Connect(function(attr)
+							if attr == 'Team' then
+								entity.Targetable = entitylib.targetCheck(entity)
+								entitylib.Events.EntityUpdated:Fire(entity)
+							end
 						end))
 					end
-					
 					for _, v in entitylib.getUpdateConnections(entity) do
 						table.insert(entity.Connections, v:Connect(function()
 							entity.Health = (char:GetAttribute('Health') or 100) + getShieldAttribute(char)
@@ -677,10 +750,15 @@ run(function()
 							entitylib.Events.EntityUpdated:Fire(entity)
 						end))
 					end
-
+					local invUpdatePending = {}
 					for _, v in updateobjects do
 						table.insert(entity.Connections, v:GetPropertyChangedSignal('Value'):Connect(function()
+							if invUpdatePending[entity] then
+								return
+							end
+							invUpdatePending[entity] = true
 							task.delay(0.1, function()
+								invUpdatePending[entity] = nil
 								if bedwars.getInventory then
 									store.inventories[plr] = bedwars.getInventory(plr)
 									entitylib.Events.EntityUpdated:Fire(entity)
@@ -688,23 +766,23 @@ run(function()
 							end)
 						end))
 					end
-
 					if plr then
 						local anim = char:FindFirstChild('Animate')
 						if anim then
 							pcall(function()
-								anim = anim.jump:FindFirstChildWhichIsA('Animation').AnimationId
-								table.insert(entity.Connections, hum.Animator.AnimationPlayed:Connect(function(playedanim)
-									if playedanim.Animation.AnimationId == anim then
+								local jumpAnimId = anim.jump:FindFirstChildWhichIsA('Animation').AnimationId
+								table.insert(entity.Connections, hum.StateChanged:Connect(function(old, new)
+									if new == Enum.HumanoidStateType.Jumping then
 										entity.JumpTick = tick()
 										entity.Jumps += 1
 										entity.LandTick = tick() + 1
 										entity.Jumping = entity.Jumps > 1
+									elseif new == Enum.HumanoidStateType.Landed or new == Enum.HumanoidStateType.Running or new == Enum.HumanoidStateType.Freefall then
+										entity.Jumping = false
 									end
 								end))
 							end)
 						end
-
 						task.delay(0.1, function()
 							if bedwars.getInventory then
 								store.inventories[plr] = bedwars.getInventory(plr)
@@ -714,7 +792,6 @@ run(function()
 					table.insert(entitylib.List, entity)
 					entitylib.Events.EntityAdded:Fire(entity)
 				end
-
 				table.insert(entity.Connections, char.ChildRemoved:Connect(function(part)
 					if part == humrootpart or part == hum or part == head then
 						if part == humrootpart and hum.RootPart then
@@ -730,7 +807,6 @@ run(function()
 			entitylib.EntityThreads[char] = nil
 		end)
 	end
-
 	entitylib.getUpdateConnections = function(ent)
 		local char = ent.Character
 		local tab = {
@@ -740,31 +816,66 @@ run(function()
 				Connect = function()
 					ent.Friend = ent.Player and isFriend(ent.Player) or nil
 					ent.Target = ent.Player and isTarget(ent.Player) or nil
-					return {Disconnect = function() end}
+					return {
+						Disconnect = function()
+						end
+					}
 				end
 			}
 		}
-
 		if ent.Player then
 			table.insert(tab, ent.Player:GetAttributeChangedSignal('PlayingAsKit'))
+			table.insert(tab, ent.Player:GetAttributeChangedSignal('PlayingAsKits'))
+			local vkSignal = {
+				Connect = function(_, func)
+					local conn = ent.Player:GetAttributeChangedSignal('VoidKnightTier'):Connect(function()
+						lastUpdate[ent] = 0
+						func()
+					end)
+					return conn
+				end
+			}
+			table.insert(tab, vkSignal)
 		end
-
-		for name, val in char:GetAttributes() do
-			if name:find('Shield') and type(val) == 'number' then
-				table.insert(tab, char:GetAttributeChangedSignal(name))
+		local blockKickerSignal = {
+			Connect = function(_, func)
+				local conn = char.AttributeChanged:Connect(function(attr)
+					if attr == 'BlockKickerKit_BlockCount' then
+						lastUpdate[ent] = 0
+						func()
+					end
+				end)
+				return conn
 			end
-		end
-
+		}
+		table.insert(tab, blockKickerSignal)
+		local shieldSignal = {
+			Connect = function(_, func)
+				local conn = char.AttributeChanged:Connect(function(attr)
+					if attr:find('Shield') then
+						func()
+					end
+				end)
+				return conn
+			end
+		}
+		table.insert(tab, shieldSignal)
 		return tab
 	end
-
 	entitylib.targetCheck = function(ent)
+		if ent.Character and ent.Character:HasTag('petrified-player') then
+			return false
+		end
 		if ent.TeamCheck then
 			return ent:TeamCheck()
 		end
-		if ent.NPC then return true end
-		if isFriend(ent.Player) then return false end
-		if not select(2, whitelist:get(ent.Player)) then return false end
+		if ent.NPC then
+			local npcTeam = ent.Character and ent.Character:GetAttribute('Team')
+			return lplr:GetAttribute('Team') ~= npcTeam
+		end
+		if isFriend(ent.Player) then
+			return false
+		end
 		return lplr:GetAttribute('Team') ~= ent.Player:GetAttribute('Team')
 	end
 	vape:Clean(entitylib.Events.LocalAdded:Connect(updateVelocity))
