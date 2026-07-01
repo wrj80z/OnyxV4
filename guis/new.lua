@@ -3744,7 +3744,7 @@ function mainapi:CreateCategory(categorysettings)
 		indicatorholder.Name = 'Indicators'
 		indicatorholder.BackgroundTransparency = 1
 		indicatorholder.Position = UDim2.fromScale(0.85, 0.5)
-		indicatorholder.BackgroundColor3 = (hovered or modulechildren.Visible) and color.Light(uipallet.Main, 0.02) or uipallet.Main
+		indicatorholder.BackgroundColor3 = (hovered) and color.Light(uipallet.Main, 0.02) or uipallet.Main
 		do
 			local layout = Instance.new('UIListLayout')
 			layout.Parent = indicatorholder
