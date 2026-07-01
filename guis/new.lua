@@ -3861,7 +3861,6 @@ function mainapi:CreateCategory(categorysettings)
 			end
 			for i, tag in modulesettings.Tags do
 				tag = tag:upper()
-				print(tag)
 				local size = getfontsize(removeTags(tag), 12, uipallet.Font, Vector2.new(100000, 100000))
 				local indicator = Instance.new('TextLabel')
 				indicator.LayoutOrder = i - 1
@@ -3872,7 +3871,7 @@ function mainapi:CreateCategory(categorysettings)
 				indicator.Text = tag
 				indicator.Name = tag
 				indicator.Position = UDim2.new()
-				indicator.TextColor3 = Color3.new(0, 0, 0)
+				indicator.TextColor3 = uipallet.Text
 				indicator.FontFace = uipallet.Font
 				indicator.Parent = indicatorholder
 				addCorner(indicator, UDim.new(0, 5))
