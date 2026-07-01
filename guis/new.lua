@@ -3713,372 +3713,426 @@ function mainapi:CreateCategory(categorysettings)
 	windowlist.Parent = children
 
 
-	function categoryapi:CreateModule(modulesettings)
-		mainapi:Remove(modulesettings.Name)
-		local moduleapi = {
-			Enabled = false,
-			Options = {},
-			Bind = {},
-			Index = getTableSize(mainapi.Modules),
-			ExtraText = modulesettings.ExtraText,
-			Name = modulesettings.Name,
-			Category = categorysettings.Name,
-			Tags = {},
-		}
-
-
-		local hovered = false
-		local modulebutton = Instance.new('TextButton')
-		modulebutton.Name = modulesettings.Name
-		modulebutton.Size = UDim2.fromOffset(220, 40)
-		modulebutton.BackgroundColor3 = uipallet.Main
-		modulebutton.BorderSizePixel = 0
-		modulebutton.AutoButtonColor = false
-		modulebutton.Text = '            '..modulesettings.Name
-		modulebutton.TextXAlignment = Enum.TextXAlignment.Left
-		modulebutton.TextColor3 = color.Dark(uipallet.Text, 0.16)
-		modulebutton.TextSize = 14
-		modulebutton.FontFace = uipallet.Font
-		modulebutton.Parent = children
-		local indicatorholder = Instance.new('Frame')
-		indicatorholder.Parent = modulebutton
-		indicatorholder.Size = UDim2.fromOffset(0, 21)
-		indicatorholder.AnchorPoint = Vector2.new(0, 0.5)
-		indicatorholder.Name = 'Indicators'
-		indicatorholder.BackgroundTransparency = 1
-		indicatorholder.Position = UDim2.fromScale(0.85, 0.5)
-
-		do
-			local layout = Instance.new('UIListLayout')
-			layout.Parent = indicatorholder
-			layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
-			layout.VerticalAlignment = Enum.VerticalAlignment.Center
-			layout.FillDirection = Enum.FillDirection.Horizontal
-			layout.Padding = UDim.new(0, 5)
-		end
-
-		local gradient = Instance.new('UIGradient')
-		gradient.Rotation = 90
-		gradient.Enabled = false
-		gradient.Parent = modulebutton
-		local modulechildren = Instance.new('Frame')
-		local bind = Instance.new('TextButton')
-		addTooltip(modulebutton, modulesettings.Tooltip)
-		addTooltip(bind, 'Click to bind')
-		bind.Name = 'Bind'
-		bind.Size = UDim2.fromOffset(20, 21)
-		bind.Position = UDim2.new(1, -36, 0, 9)
-		bind.AnchorPoint = Vector2.new(1, 0)
-		bind.BackgroundColor3 = Color3.new(1, 1, 1)
-		bind.BackgroundTransparency = 0.92
-		bind.BorderSizePixel = 0
-		bind.AutoButtonColor = false
-		bind.Visible = false
-		bind.Text = ''
-		addCorner(bind, UDim.new(0, 4))
-		local bindicon = Instance.new('ImageLabel')
-		bindicon.Name = 'Icon'
-		bindicon.Size = UDim2.fromOffset(12, 12)
-		bindicon.Position = UDim2.new(0.5, -6, 0, 5)
-		bindicon.BackgroundTransparency = 1
-		bindicon.Image = getcustomasset('onyx/assets/new/bind.png')
-		bindicon.ImageColor3 = color.Dark(uipallet.Text, 0.43)
-		bindicon.Parent = bind
-		local bindtext = Instance.new('TextLabel')
-		bindtext.Size = UDim2.fromScale(1, 1)
-		bindtext.Position = UDim2.fromOffset(0, 1)
-		bindtext.BackgroundTransparency = 1
-		bindtext.Visible = false
-		bindtext.Text = ''
-		bindtext.TextColor3 = color.Dark(uipallet.Text, 0.43)
-		bindtext.TextSize = 12
-		bindtext.FontFace = uipallet.Font
-		bindtext.Parent = bind
-		local bindcover = Instance.new('ImageLabel')
-		bindcover.Name = 'Cover'
-		bindcover.Size = UDim2.fromOffset(154, 40)
-		bindcover.BackgroundTransparency = 1
-		bindcover.Visible = false
-		bindcover.Image = getcustomasset('onyx/assets/new/bindbkg.png')
-		bindcover.ScaleType = Enum.ScaleType.Slice
-		bindcover.SliceCenter = Rect.new(0, 0, 141, 40)
-		bindcover.Parent = modulebutton
-		local bindcovertext = Instance.new('TextLabel')
-		bindcovertext.Name = 'Text'
-		bindcovertext.Size = UDim2.new(1, -10, 1, -3)
-		bindcovertext.BackgroundTransparency = 1
-		bindcovertext.Text = 'PRESS A KEY TO BIND'
-		bindcovertext.TextColor3 = uipallet.Text
-		bindcovertext.TextSize = 11
-		bindcovertext.FontFace = uipallet.Font
-		bindcovertext.Parent = bindcover
-		bind.Parent = modulebutton
-		local dotsbutton = Instance.new('TextButton')
-		dotsbutton.Name = 'Dots'
-		dotsbutton.Size = UDim2.fromOffset(25, 40)
-		dotsbutton.Position = UDim2.new(1, -25, 0, 0)
-		dotsbutton.BackgroundTransparency = 1
-		dotsbutton.Text = ''
-		dotsbutton.Parent = modulebutton
-		local dots = Instance.new('ImageLabel')
-		dots.Name = 'Dots'
-		dots.Size = UDim2.fromOffset(3, 16)
-		dots.Position = UDim2.fromOffset(4, 12)
-		dots.BackgroundTransparency = 1
-		dots.Image = getcustomasset('onyx/assets/new/dots.png')
-		dots.ImageColor3 = color.Light(uipallet.Main, 0.37)
-		dots.Parent = dotsbutton
-		modulechildren.Name = modulesettings.Name..'Children'
-		modulechildren.Size = UDim2.new(1, 0, 0, 0)
-		modulechildren.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
-		modulechildren.BorderSizePixel = 0
-		modulechildren.Visible = false
-		modulechildren.Parent = children
-		moduleapi.Children = modulechildren
-		local windowlist = Instance.new('UIListLayout')
-		windowlist.SortOrder = Enum.SortOrder.LayoutOrder
-		windowlist.HorizontalAlignment = Enum.HorizontalAlignment.Center
-		windowlist.Parent = modulechildren
-		local divider = Instance.new('Frame')
-		divider.Name = 'Divider'
-		divider.Size = UDim2.new(1, 0, 0, 1)
-		divider.Position = UDim2.new(0, 0, 1, -1)
-		divider.BackgroundColor3 = Color3.new(0.19, 0.19, 0.19)
-		divider.BackgroundTransparency = 0.52
-		divider.BorderSizePixel = 0
-		divider.Visible = false
-		divider.Parent = modulebutton
-		modulesettings.Function = modulesettings.Function or function() end
-		addMaid(moduleapi)
-		modulesettings.Tags = modulesettings.Tags or {}
-
-		pcall(function()
-			local modulesData = httpService:JSONDecode(readfile("onyx/profiles/modules.json"))
-			if not modulesData[moduleapi.Name] then
-				if not table.find(modulesettings.Tags, "new") then
-					table.insert(modulesettings.Tags, "new")
-				end
-				modulesData[moduleapi.Name] = {AddedTime=os.time()}
-				writefile("onyx/profiles/modules.json",httpService:JSONEncode(modulesData))
-				table.insert(newModules, moduleapi.Name)
+		function categoryapi:CreateModule(modulesettings)
+			mainapi:Remove(modulesettings.Name)
+			local moduleapi = {
+				Enabled = false,
+				Options = {},
+				Bind = {},
+				Index = getTableSize(mainapi.Modules),
+				ExtraText = modulesettings.ExtraText,
+				Name = modulesettings.Name,
+				Category = categorysettings.Name,
+				Tags = {},
+			}
+	
+	
+			local hovered = false
+			local modulebutton = Instance.new('TextButton')
+			modulebutton.Name = modulesettings.Name
+			modulebutton.Size = UDim2.fromOffset(220, 40)
+			modulebutton.BackgroundColor3 = uipallet.Main
+			modulebutton.BorderSizePixel = 0
+			modulebutton.AutoButtonColor = false
+			modulebutton.Text = '            '..modulesettings.Name
+			modulebutton.TextXAlignment = Enum.TextXAlignment.Left
+			modulebutton.TextColor3 = color.Dark(uipallet.Text, 0.16)
+			modulebutton.TextSize = 14
+			modulebutton.FontFace = uipallet.Font
+			modulebutton.Parent = children
+			local indicatorholder = Instance.new('Frame')
+			indicatorholder.Parent = modulebutton
+			indicatorholder.Size = UDim2.fromOffset(0, 21)
+			indicatorholder.AnchorPoint = Vector2.new(0, 0.5)
+			indicatorholder.Name = 'Indicators'
+			indicatorholder.BackgroundTransparency = 1
+			indicatorholder.Position = UDim2.fromScale(0.85, 0.5)
+	
+			do
+				local layout = Instance.new('UIListLayout')
+				layout.Parent = indicatorholder
+				layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+				layout.VerticalAlignment = Enum.VerticalAlignment.Center
+				layout.FillDirection = Enum.FillDirection.Horizontal
+				layout.Padding = UDim.new(0, 5)
 			end
-			for i, tag in modulesettings.Tags do
-				tag = tag:upper()
-				print(tag)
-				local size = getfontsize(removeTags(tag), 12, uipallet.Font, Vector2.new(100000, 100000))
-				local indicator = Instance.new('TextLabel')
-				indicator.LayoutOrder = i - 1
-				indicator.Size = UDim2.new(0, size.X + 4, 0, 21)
-				indicator.BackgroundColor3 = uipallet.Main
-				indicator.TextSize = 14
-				indicator.TextTransparency = 1
-				indicator.Text = tag
-				indicator.Name = tag
-				indicator.Position = UDim2.new()
-				indicator.TextColor3 = Color3.new(0, 0, 0)
-				indicator.FontFace = uipallet.Font
-				indicator.Parent = indicatorholder
-				addCorner(indicator, UDim.new(0, 5))
-				local text = indicator:Clone()
-				text.Position = UDim2.new()
-				text.Size = UDim2.fromScale(1, 1)
-				text.BackgroundTransparency = 1
-				text.Name = 'Text'
-				text.AnchorPoint = Vector2.new()
-				text.TextSize = 12
-				text.TextTransparency = 0
-				text.Parent = indicator
-				table.insert(moduleapi.Tags, indicator)
-				indicator.Visible = tag ~= 'MATCHED'
-			end
-		end)
-		function moduleapi:SetBind(tab, mouse)
-			if tab.Mobile then
-				createMobileButton(moduleapi, Vector2.new(tab.X, tab.Y))
-				return
-			end
-
-			self.Bind = table.clone(tab)
-			if mouse then
-				bindcovertext.Text = #tab <= 0 and 'BIND REMOVED' or 'BOUND TO'
-				bindcover.Size = UDim2.fromOffset(getfontsize(bindcovertext.Text, bindcovertext.TextSize).X + 20, 40)
-				task.delay(1, function()
-					bindcover.Visible = false
-				end)
-			end
-
-			if #tab <= 0 then
-				bindtext.Visible = false
-				bindicon.Visible = true
-				bind.Size = UDim2.fromOffset(20, 21)
-			else
-				bind.Visible = true
-				bindtext.Visible = true
-				bindicon.Visible = false
-				bindtext.Text = table.concat(tab, ' + '):upper()
-				bind.Size = UDim2.fromOffset(math.max(getfontsize(bindtext.Text, bindtext.TextSize, bindtext.Font).X + 10, 20), 21)
-			end
-		end
-
-		function moduleapi:Toggle(multiple)
-			if mainapi.ThreadFix then
-				setthreadidentity(8)
-			end
-			self.Enabled = not self.Enabled
-			divider.Visible = self.Enabled
-			gradient.Enabled = self.Enabled
-			modulebutton.TextColor3 = (hovered or modulechildren.Visible) and uipallet.Text or color.Dark(uipallet.Text, 0.16)
-			modulebutton.BackgroundColor3 = (hovered or modulechildren.Visible) and color.Light(uipallet.Main, 0.02) or uipallet.Main
-			dots.ImageColor3 = self.Enabled and Color3.fromRGB(50, 50, 50) or color.Light(uipallet.Main, 0.37)
-			bindicon.ImageColor3 = color.Dark(uipallet.Text, 0.43)
-			bindtext.TextColor3 = color.Dark(uipallet.Text, 0.43)
-			if not self.Enabled then
-				for _, v in self.Connections do
-					v:Disconnect()
-				end
-				table.clear(self.Connections)
-			end
-			if not multiple then
-				mainapi:UpdateTextGUI()
-			end
-			task.spawn(modulesettings.Function, self.Enabled)
-		end
-
-		for i, v in components do
-			moduleapi['Create'..i] = function(_, optionsettings)
-				return v(optionsettings, modulechildren, moduleapi)
-			end
-		end
-
-		bind.MouseEnter:Connect(function()
-			bindtext.Visible = false
-			bindicon.Visible = not bindtext.Visible
-			bindicon.Image = getcustomasset('onyx/assets/new/edit.png')
-			if not moduleapi.Enabled then bindicon.ImageColor3 = color.Dark(uipallet.Text, 0.16) end
-		end)
-		bind.MouseLeave:Connect(function()
-			bindtext.Visible = #moduleapi.Bind > 0
-			bindicon.Visible = not bindtext.Visible
+	
+			local gradient = Instance.new('UIGradient')
+			gradient.Rotation = 90
+			gradient.Enabled = false
+			gradient.Parent = modulebutton
+			local modulechildren = Instance.new('Frame')
+			local bind = Instance.new('TextButton')
+			addTooltip(modulebutton, modulesettings.Tooltip)
+			addTooltip(bind, 'Click to bind')
+			bind.Name = 'Bind'
+			bind.Size = UDim2.fromOffset(20, 21)
+			bind.Position = UDim2.new(1, -36, 0, 9)
+			bind.AnchorPoint = Vector2.new(1, 0)
+			bind.BackgroundColor3 = Color3.new(1, 1, 1)
+			bind.BackgroundTransparency = 0.92
+			bind.BorderSizePixel = 0
+			bind.AutoButtonColor = false
+			bind.Visible = false
+			bind.Text = ''
+			addCorner(bind, UDim.new(0, 4))
+			local bindicon = Instance.new('ImageLabel')
+			bindicon.Name = 'Icon'
+			bindicon.Size = UDim2.fromOffset(12, 12)
+			bindicon.Position = UDim2.new(0.5, -6, 0, 5)
+			bindicon.BackgroundTransparency = 1
 			bindicon.Image = getcustomasset('onyx/assets/new/bind.png')
-			if not moduleapi.Enabled then
-				bindicon.ImageColor3 = color.Dark(uipallet.Text, 0.43)
-			end
-		end)
-		bind.MouseButton1Click:Connect(function()
+			bindicon.ImageColor3 = color.Dark(uipallet.Text, 0.43)
+			bindicon.Parent = bind
+			local bindtext = Instance.new('TextLabel')
+			bindtext.Size = UDim2.fromScale(1, 1)
+			bindtext.Position = UDim2.fromOffset(0, 1)
+			bindtext.BackgroundTransparency = 1
+			bindtext.Visible = false
+			bindtext.Text = ''
+			bindtext.TextColor3 = color.Dark(uipallet.Text, 0.43)
+			bindtext.TextSize = 12
+			bindtext.FontFace = uipallet.Font
+			bindtext.Parent = bind
+			local bindcover = Instance.new('ImageLabel')
+			bindcover.Name = 'Cover'
+			bindcover.Size = UDim2.fromOffset(154, 40)
+			bindcover.BackgroundTransparency = 1
+			bindcover.Visible = false
+			bindcover.Image = getcustomasset('onyx/assets/new/bindbkg.png')
+			bindcover.ScaleType = Enum.ScaleType.Slice
+			bindcover.SliceCenter = Rect.new(0, 0, 141, 40)
+			bindcover.Parent = modulebutton
+			local bindcovertext = Instance.new('TextLabel')
+			bindcovertext.Name = 'Text'
+			bindcovertext.Size = UDim2.new(1, -10, 1, -3)
+			bindcovertext.BackgroundTransparency = 1
 			bindcovertext.Text = 'PRESS A KEY TO BIND'
-			bindcover.Size = UDim2.fromOffset(getfontsize(bindcovertext.Text, bindcovertext.TextSize).X + 20, 40)
-			bindcover.Visible = true
-			mainapi.Binding = moduleapi
-		end)
-		dotsbutton.MouseEnter:Connect(function()
-			if not moduleapi.Enabled then
-				dots.ImageColor3 = uipallet.Text
-			end
-		end)
-		dotsbutton.MouseLeave:Connect(function()
-			if not moduleapi.Enabled then
-				dots.ImageColor3 = color.Light(uipallet.Main, 0.37)
-			end
-		end)
-		dotsbutton.MouseButton1Click:Connect(function()
-			modulechildren.Visible = not modulechildren.Visible
-		end)
-		dotsbutton.MouseButton2Click:Connect(function()
-			modulechildren.Visible = not modulechildren.Visible
-		end)
-		modulebutton.MouseEnter:Connect(function()
-			hovered = true
-			if not moduleapi.Enabled and not modulechildren.Visible then
-				modulebutton.TextColor3 = uipallet.Text
-				modulebutton.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
-			end
-			bind.Visible = #moduleapi.Bind > 0 or hovered or modulechildren.Visible
-		end)
-		modulebutton.MouseLeave:Connect(function()
-			hovered = false
-			if not moduleapi.Enabled and not modulechildren.Visible then
-				modulebutton.TextColor3 = color.Dark(uipallet.Text, 0.16)
-				modulebutton.BackgroundColor3 = uipallet.Main
-			end
-			bind.Visible = #moduleapi.Bind > 0 or hovered or modulechildren.Visible
-		end)
-		modulebutton.MouseButton1Click:Connect(function()
-			moduleapi:Toggle()
-		end)
-		modulebutton.MouseButton2Click:Connect(function()
-			modulechildren.Visible = not modulechildren.Visible
-		end)
-		if inputService.TouchEnabled then
-			local heldbutton = false
-			modulebutton.MouseButton1Down:Connect(function()
-				heldbutton = true
-				local holdtime, holdpos = tick(), inputService:GetMouseLocation()
-				repeat
-					heldbutton = (inputService:GetMouseLocation() - holdpos).Magnitude < 3
-					task.wait()
-				until (tick() - holdtime) > 1 or not heldbutton or not clickgui.Visible
-				if heldbutton and clickgui.Visible then
-					if mainapi.ThreadFix then
-						setthreadidentity(8)
+			bindcovertext.TextColor3 = uipallet.Text
+			bindcovertext.TextSize = 11
+			bindcovertext.FontFace = uipallet.Font
+			bindcovertext.Parent = bindcover
+			bind.Parent = modulebutton
+			local dotsbutton = Instance.new('TextButton')
+			dotsbutton.Name = 'Dots'
+			dotsbutton.Size = UDim2.fromOffset(25, 40)
+			dotsbutton.Position = UDim2.new(1, -25, 0, 0)
+			dotsbutton.BackgroundTransparency = 1
+			dotsbutton.Text = ''
+			dotsbutton.Parent = modulebutton
+			local dots = Instance.new('ImageLabel')
+			dots.Name = 'Dots'
+			dots.Size = UDim2.fromOffset(3, 16)
+			dots.Position = UDim2.fromOffset(4, 12)
+			dots.BackgroundTransparency = 1
+			dots.Image = getcustomasset('onyx/assets/new/dots.png')
+			dots.ImageColor3 = color.Light(uipallet.Main, 0.37)
+			dots.Parent = dotsbutton
+			modulechildren.Name = modulesettings.Name..'Children'
+			modulechildren.Size = UDim2.new(1, 0, 0, 0)
+			modulechildren.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
+			modulechildren.BorderSizePixel = 0
+			modulechildren.Visible = false
+			modulechildren.Parent = children
+			moduleapi.Children = modulechildren
+			local windowlist = Instance.new('UIListLayout')
+			windowlist.SortOrder = Enum.SortOrder.LayoutOrder
+			windowlist.HorizontalAlignment = Enum.HorizontalAlignment.Center
+			windowlist.Parent = modulechildren
+			local divider = Instance.new('Frame')
+			divider.Name = 'Divider'
+			divider.Size = UDim2.new(1, 0, 0, 1)
+			divider.Position = UDim2.new(0, 0, 1, -1)
+			divider.BackgroundColor3 = Color3.new(0.19, 0.19, 0.19)
+			divider.BackgroundTransparency = 0.52
+			divider.BorderSizePixel = 0
+			divider.Visible = false
+			divider.Parent = modulebutton
+			modulesettings.Function = modulesettings.Function or function() end
+			addMaid(moduleapi)
+			modulesettings.Tags = modulesettings.Tags or {}
+	
+			pcall(function()
+				local modulesData = httpService:JSONDecode(readfile("onyx/profiles/modules.json"))
+				if not modulesData[moduleapi.Name] then
+					if not table.find(modulesettings.Tags, "new") then
+						table.insert(modulesettings.Tags, "new")
 					end
-					clickgui.Visible = false
-					tooltip.Visible = false
-					mainapi:BlurCheck()
-					for _, mobileButton in mainapi.Modules do
-						if mobileButton.Bind.Button then
-							mobileButton.Bind.Button.Visible = true
-						end
-					end
-
-					local touchconnection
-					touchconnection = inputService.InputBegan:Connect(function(inputType)
-						if inputType.UserInputType == Enum.UserInputType.Touch then
-							if mainapi.ThreadFix then
-								setthreadidentity(8)
-							end
-							createMobileButton(moduleapi, inputType.Position + Vector3.new(0, guiService:GetGuiInset().Y, 0))
-							clickgui.Visible = true
-							mainapi:BlurCheck()
-							for _, mobileButton in mainapi.Modules do
-								if mobileButton.Bind.Button then
-									mobileButton.Bind.Button.Visible = false
-								end
-							end
-							touchconnection:Disconnect()
-						end
+					modulesData[moduleapi.Name] = {AddedTime=os.time()}
+					writefile("onyx/profiles/modules.json",httpService:JSONEncode(modulesData))
+					table.insert(newModules, moduleapi.Name)
+				end
+				for i, tag in modulesettings.Tags do
+					tag = tag:upper()
+					print(tag)
+					local size = getfontsize(removeTags(tag), 12, uipallet.Font, Vector2.new(100000, 100000))
+					local indicator = Instance.new('TextLabel')
+					indicator.LayoutOrder = i - 1
+					indicator.Size = UDim2.new(0, size.X + 4, 0, 21)
+					indicator.BackgroundColor3 = uipallet.Main
+					indicator.TextSize = 14
+					indicator.TextTransparency = 1
+					indicator.Text = tag
+					indicator.Name = tag
+					indicator.Position = UDim2.new()
+					indicator.TextColor3 = Color3.new(0, 0, 0)
+					indicator.FontFace = uipallet.Font
+					indicator.Parent = indicatorholder
+					addCorner(indicator, UDim.new(0, 5))
+					local text = indicator:Clone()
+					text.Position = UDim2.new()
+					text.Size = UDim2.fromScale(1, 1)
+					text.BackgroundTransparency = 1
+					text.Name = 'Text'
+					text.AnchorPoint = Vector2.new()
+					text.TextSize = 12
+					text.TextTransparency = 0
+					text.Parent = indicator
+					table.insert(moduleapi.Tags, indicator)
+					indicator.Visible = tag ~= 'MATCHED'
+				end
+			end)
+			function moduleapi:SetBind(tab, mouse)
+				if tab.Mobile then
+					createMobileButton(moduleapi, Vector2.new(tab.X, tab.Y))
+					return
+				end
+	
+				self.Bind = table.clone(tab)
+				if mouse then
+					bindcovertext.Text = #tab <= 0 and 'BIND REMOVED' or 'BOUND TO'
+					bindcover.Size = UDim2.fromOffset(getfontsize(bindcovertext.Text, bindcovertext.TextSize).X + 20, 40)
+					task.delay(1, function()
+						bindcover.Visible = false
 					end)
 				end
+	
+				if #tab <= 0 then
+					bindtext.Visible = false
+					bindicon.Visible = true
+					bind.Size = UDim2.fromOffset(20, 21)
+				else
+					bind.Visible = true
+					bindtext.Visible = true
+					bindicon.Visible = false
+					bindtext.Text = table.concat(tab, ' + '):upper()
+					bind.Size = UDim2.fromOffset(math.max(getfontsize(bindtext.Text, bindtext.TextSize, bindtext.Font).X + 10, 20), 21)
+				end
+			end
+	
+			function moduleapi:Toggle(multiple)
+				if mainapi.ThreadFix then
+					setthreadidentity(8)
+				end
+				self.Enabled = not self.Enabled
+				divider.Visible = self.Enabled
+				gradient.Enabled = self.Enabled
+				modulebutton.TextColor3 = (hovered or modulechildren.Visible) and uipallet.Text or color.Dark(uipallet.Text, 0.16)
+				modulebutton.BackgroundColor3 = (hovered or modulechildren.Visible) and color.Light(uipallet.Main, 0.02) or uipallet.Main
+				dots.ImageColor3 = self.Enabled and Color3.fromRGB(50, 50, 50) or color.Light(uipallet.Main, 0.37)
+				bindicon.ImageColor3 = color.Dark(uipallet.Text, 0.43)
+				bindtext.TextColor3 = color.Dark(uipallet.Text, 0.43)
+				if not self.Enabled then
+					for _, v in self.Connections do
+						v:Disconnect()
+					end
+					table.clear(self.Connections)
+				end
+				if not multiple then
+					mainapi:UpdateTextGUI()
+				end
+				task.spawn(modulesettings.Function, self.Enabled)
+			end
+	
+			for i, v in components do
+				moduleapi['Create'..i] = function(_, optionsettings)
+					return v(optionsettings, modulechildren, moduleapi)
+				end
+			end
+	
+			bind.MouseEnter:Connect(function()
+				bindtext.Visible = false
+				bindicon.Visible = not bindtext.Visible
+				bindicon.Image = getcustomasset('onyx/assets/new/edit.png')
+				if not moduleapi.Enabled then bindicon.ImageColor3 = color.Dark(uipallet.Text, 0.16) end
 			end)
-			modulebutton.MouseButton1Up:Connect(function()
-				heldbutton = false
+			bind.MouseLeave:Connect(function()
+				bindtext.Visible = #moduleapi.Bind > 0
+				bindicon.Visible = not bindtext.Visible
+				bindicon.Image = getcustomasset('onyx/assets/new/bind.png')
+				if not moduleapi.Enabled then
+					bindicon.ImageColor3 = color.Dark(uipallet.Text, 0.43)
+				end
 			end)
+			bind.MouseButton1Click:Connect(function()
+				bindcovertext.Text = 'PRESS A KEY TO BIND'
+				bindcover.Size = UDim2.fromOffset(getfontsize(bindcovertext.Text, bindcovertext.TextSize).X + 20, 40)
+				bindcover.Visible = true
+				mainapi.Binding = moduleapi
+			end)
+			dotsbutton.MouseEnter:Connect(function()
+				if not moduleapi.Enabled then
+					dots.ImageColor3 = uipallet.Text
+				end
+			end)
+			dotsbutton.MouseLeave:Connect(function()
+				if not moduleapi.Enabled then
+					dots.ImageColor3 = color.Light(uipallet.Main, 0.37)
+				end
+			end)
+			dotsbutton.MouseButton1Click:Connect(function()
+				modulechildren.Visible = not modulechildren.Visible
+			end)
+			dotsbutton.MouseButton2Click:Connect(function()
+				modulechildren.Visible = not modulechildren.Visible
+			end)
+			modulebutton.MouseEnter:Connect(function()
+				hovered = true
+				if not moduleapi.Enabled and not modulechildren.Visible then
+					modulebutton.TextColor3 = uipallet.Text
+					modulebutton.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+				end
+				bind.Visible = #moduleapi.Bind > 0 or hovered or modulechildren.Visible
+			end)
+			modulebutton.MouseLeave:Connect(function()
+				hovered = false
+				if not moduleapi.Enabled and not modulechildren.Visible then
+					modulebutton.TextColor3 = color.Dark(uipallet.Text, 0.16)
+					modulebutton.BackgroundColor3 = uipallet.Main
+				end
+				bind.Visible = #moduleapi.Bind > 0 or hovered or modulechildren.Visible
+			end)
+			modulebutton.MouseButton1Click:Connect(function()
+				moduleapi:Toggle()
+			end)
+			modulebutton.MouseButton2Click:Connect(function()
+				modulechildren.Visible = not modulechildren.Visible
+			end)
+			if inputService.TouchEnabled then
+				local heldbutton = false
+				modulebutton.MouseButton1Down:Connect(function()
+					heldbutton = true
+					local holdtime, holdpos = tick(), inputService:GetMouseLocation()
+					repeat
+						heldbutton = (inputService:GetMouseLocation() - holdpos).Magnitude < 3
+						task.wait()
+					until (tick() - holdtime) > 1 or not heldbutton or not clickgui.Visible
+					if heldbutton and clickgui.Visible then
+						if mainapi.ThreadFix then
+							setthreadidentity(8)
+						end
+						clickgui.Visible = false
+						tooltip.Visible = false
+						mainapi:BlurCheck()
+						for _, mobileButton in mainapi.Modules do
+							if mobileButton.Bind.Button then
+								mobileButton.Bind.Button.Visible = true
+							end
+						end
+	
+						local touchconnection
+						touchconnection = inputService.InputBegan:Connect(function(inputType)
+							if inputType.UserInputType == Enum.UserInputType.Touch then
+								if mainapi.ThreadFix then
+									setthreadidentity(8)
+								end
+								createMobileButton(moduleapi, inputType.Position + Vector3.new(0, guiService:GetGuiInset().Y, 0))
+								clickgui.Visible = true
+								mainapi:BlurCheck()
+								for _, mobileButton in mainapi.Modules do
+									if mobileButton.Bind.Button then
+										mobileButton.Bind.Button.Visible = false
+									end
+								end
+								touchconnection:Disconnect()
+							end
+						end)
+					end
+				end)
+				modulebutton.MouseButton1Up:Connect(function()
+					heldbutton = false
+				end)
+			end
+			windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
+				if mainapi.ThreadFix then
+					setthreadidentity(8)
+				end
+				modulechildren.Size = UDim2.new(1, 0, 0, windowlist.AbsoluteContentSize.Y / scale.Scale)
+			end)
+	
+			moduleapi.Object = modulebutton
+			mainapi.Modules[modulesettings.Name] = moduleapi
+	
+			local sorting = {}
+			for _, v in mainapi.Modules do
+				sorting[v.Category] = sorting[v.Category] or {}
+				table.insert(sorting[v.Category], v.Name)
+			end
+	
+			for _, sort in sorting do
+				table.sort(sort)
+				for i, v in sort do
+					mainapi.Modules[v].Index = i
+					mainapi.Modules[v].Object.LayoutOrder = i
+					mainapi.Modules[v].Children.LayoutOrder = i
+				end
+			end
+	
+			return moduleapi
 		end
-		windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-			if mainapi.ThreadFix then
+	
+		function categoryapi:Expand()
+			self.Expanded = not self.Expanded
+			children.Visible = self.Expanded
+			arrow.Rotation = self.Expanded and 0 or 180
+			window.Size = UDim2.fromOffset(220, self.Expanded and math.min(41 + windowlist.AbsoluteContentSize.Y / scale.Scale, 601) or 41)
+			divider.Visible = children.CanvasPosition.Y > 10 and children.Visible
+		end
+	
+		arrowbutton.MouseButton1Click:Connect(function()
+			categoryapi:Expand()
+		end)
+		arrowbutton.MouseButton2Click:Connect(function()
+			categoryapi:Expand()
+		end)
+		arrowbutton.MouseEnter:Connect(function()
+			arrow.ImageColor3 = Color3.fromRGB(220, 220, 220)
+		end)
+		arrowbutton.MouseLeave:Connect(function()
+			arrow.ImageColor3 = Color3.fromRGB(140, 140, 140)
+		end)
+		children:GetPropertyChangedSignal('CanvasPosition'):Connect(function()
+			if self.ThreadFix then
 				setthreadidentity(8)
 			end
-			modulechildren.Size = UDim2.new(1, 0, 0, windowlist.AbsoluteContentSize.Y / scale.Scale)
+			divider.Visible = children.CanvasPosition.Y > 10 and children.Visible
 		end)
-
-		moduleapi.Object = modulebutton
-		mainapi.Modules[modulesettings.Name] = moduleapi
-
-		local sorting = {}
-		for _, v in mainapi.Modules do
-			sorting[v.Category] = sorting[v.Category] or {}
-			table.insert(sorting[v.Category], v.Name)
-		end
-
-		for _, sort in sorting do
-			table.sort(sort)
-			for i, v in sort do
-				mainapi.Modules[v].Index = i
-				mainapi.Modules[v].Object.LayoutOrder = i
-				mainapi.Modules[v].Children.LayoutOrder = i
+		window.InputBegan:Connect(function(inputObj)
+			if inputObj.Position.Y < window.AbsolutePosition.Y + 41 and inputObj.UserInputType == Enum.UserInputType.MouseButton2 then
+				categoryapi:Expand()
 			end
-		end
-
-		return moduleapi
+		end)
+		windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
+			if self.ThreadFix then
+				setthreadidentity(8)
+			end
+			children.CanvasSize = UDim2.fromOffset(0, windowlist.AbsoluteContentSize.Y / scale.Scale)
+			if categoryapi.Expanded then
+				window.Size = UDim2.fromOffset(220, math.min(41 + windowlist.AbsoluteContentSize.Y / scale.Scale, 601))
+			end
+		end)
+	
+		categoryapi.Button = self.Categories.Main:CreateButton({
+			Name = categorysettings.Name,
+			Icon = categorysettings.Icon,
+			Size = categorysettings.Size,
+			Window = window
+		})
+	
+		categoryapi.Object = window
+		self.Categories[categorysettings.Name] = categoryapi
+	
+		return categoryapi
 	end
 
 	function categoryapi:Expand()
