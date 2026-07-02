@@ -59,11 +59,8 @@ local direct = function()
             })
         end)
     end
-    task.delay(lplr:GetNetworkPing(), function()
-        req()
-        task.wait(lplr:GetNetworkPing())
-        req()
-    end)
+    req()
+	req()
 end
 
 task.spawn(function()
@@ -90,7 +87,7 @@ local function downloadFile(path, func)
             res = "--This watermark is used to delete the file if it's cached, remove it to make the file persist after vape updates.\n"..res
         end
         writefile(path, res)
-        task.wait(lplr:GetNetworkPing()) -- funny
+        task.wait(0.01231) -- funny
         if downloader then
             downloader.Text = ''
         end
@@ -102,7 +99,7 @@ local function finishLoading()
     vape.Init = nil
     vape:Load()
     task.spawn(function()
-        local tme = (10 + lplr:GetNetworkPing())
+        local tme = (10 + 0.01231)
         repeat
             vape:Save()
             task.wait(tme)
@@ -146,10 +143,10 @@ local function finishLoading()
             if getgenv().role == 'HWID-Mismatch' then
                 vape:CreateNotification('Onyx', 'HWID MISMATCH?, Go to the script panel and reset your hwid.', 30, 'warning')
                 getgenv().role = ''
-                task.wait(0.1 + lplr:GetNetworkPing())
+                task.wait(0.1 + 0.01231)
             end
             vape:CreateNotification('Finished Loading!', (getgenv().name and `Authenticated as {getgenv().name} with {getgenv().role}, ` or '').. (vape.VapeButton and 'Press the button in the top right' or 'Press '..table.concat(vape.Keybind, ' + '):upper())..' to open GUI', 5)
-            task.delay(1 + lplr:GetNetworkPing(), function()
+            task.delay(1 + 0.01231, function()
 				if shared.update then
 					vape:CreateNotification('Onyx', `Script has updated from {shared.update} to {readfile('onyx/profiles/commit.txt')}`, 15)
 				end
