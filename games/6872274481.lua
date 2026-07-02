@@ -8990,7 +8990,7 @@ end)
 
 run(function()
 	vape.Categories.World:CreateModule({
-		Name = 'Anti-AFK',
+		Name = 'Anti AFK',
 		Function = function(callback)
 			if callback then
 				for _, v in getconnections(lplr.Idled) do
