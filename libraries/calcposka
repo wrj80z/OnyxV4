@@ -1,3 +1,4 @@
+local vape = shared.vape or {}
 local calcposka = {}
 local cloneref = cloneref or function(obj: any) return obj end
 local RunService = cloneref(game:GetService("RunService"))
@@ -164,7 +165,7 @@ function calcposka.calcPos(myPos, targetRoot)
         predictedPos = predictedPos + Vector3.new(0, gravityOffset, 0)
     end
     
-    return predictedPos
+    return predictedPos - targetRoot.Position
 end
 
 return calcposka
