@@ -20,18 +20,6 @@ local function downloadFile(path, func)
 	end
 	return (func or readfile)(path)
 end
-local loadstr = clonefunction(loadstring)
-getgenv().oldloadstring = loadstr
-local loadstring = function(...)
-	local res, err = loadstr(...)
-	if err and vape then
-        vape:CreateNotification('Vape', `Failed to load: {err} | Storing packets..`, 30, 'alert')
-        --todo store packet to server
-    elseif err and not vape then
-        warn(err)
-	end
-	return res
-end
 local run = function(func)
 	func()
 end
@@ -1773,78 +1761,7 @@ run(function()
 		end
 	})
 end)
-	
-run(function()
-	local Desync
-	local hook
-	local function Buffering(mode)
-		if mode:find('u32') then
-			return 4294967295
-		elseif mode:find('id') then
-			return 27
-		end
-		return 0
-	end
-	local function Resync()
-		if not entitylib.isAlive then
-			return
-		end
-		notif('Desync', 'Resynced position!', 4, 'info')
-		entitylib.character.RootPart.CFrame += Vector3.new(math.nan,math.nan,math.nan)
-	end
 
-	Desync = vape.Categories.Blatant:CreateModule({
-		Name = 'Desync',
-		Tooltip = 'Prevent the server from replicating your current position to other players.',
-		Function = function(callback)
-			if callback then
-				if not rakNetCheck('Desync') then
-					notif('Vape', 'Sending packets to server. Failed to load Desync [MISSING_RAKNET]', 8)
-					-- send packet to server
-					vape:Remove('Desync')
-					return
-				end
-				hook = function(packet)
-					if not packet.AsArray or packet.AsArray[1] ~= Buffering('packet_id') then
-						return
-					end
-					local data = packet.AsBuffer
-					if data then
-						buffer.writeu32(data, 1, Buffering('max_u32'))
-						buffer.writeu8(data, 25, 7)
-						packet:SetData(data)
-					end
-				end
-				local suc, res = pcall(function()
-					return raknet.add_send_hook(hook)
-				end)
-				if not suc then
-					notif('Vape', 'Sending packets to server. Failed to load Desync [FAILED_TO_HOOK]', 8)
-					-- send packet to server
-					vape:Remove('Desync')
-					return
-				end
-				if entitylib.isAlive and (getgenv().store and getgenv().store.matchState ~= 0) then
-					entitylib.character.Humanoid.Health = 0
-					notif('Desync', 'Resyncing position! If you flag mutiple times, you will need to retoggle :(', 12)
-				end
-			else
-				if hook then
-					local suc, res = pcall(function()
-						return raknet.remove_send_hook(hook)
-					end)
-					if not suc then
-						notif('Vape', 'Sending packets to server. Failed to destory Desync [FAILED_TO_REMOVE]', 8)
-						-- send packet to server
-						vape:Remove('Desync')
-						return
-					end
-				end
-				hook = nil
-			end
-		end
-	})
-end)
 	
 local Fly
 local LongJump
@@ -2401,43 +2318,6 @@ run(function()
 			end
 		end,
 		Tooltip = 'Turns you invisible.'
-	})
-end)
-	
-run(function()
-	local Jesus
-	local params = RaycastParams.new()
-	params.FilterType = Enum.RaycastFilterType.Include
-	
-	Jesus = vape.Categories.Blatant:CreateModule({
-		Name = 'Jesus',
-		Function = function(callback)
-			if callback then
-				local terrain = workspace:FindFirstChildWhichIsA('Terrain')
-				params.FilterDescendantsInstances = {terrain}
-				local Platform = Instance.new('Part')
-				Platform.CanQuery = false
-				Platform.Anchored = true
-				Platform.Size = Vector3.one
-				Platform.Transparency = 1
-				Platform.Parent = gameCamera
-	
-				Jesus:Clean(Platform)
-				Jesus:Clean(runService.PreSimulation:Connect(function()
-					if entitylib.isAlive then
-						local root = entitylib.character.RootPart
-						local ray = workspace:Raycast(root.Position, Vector3.new(0, -((root.Size.Y / 2) + entitylib.character.HipHeight + math.abs(root.AssemblyLinearVelocity.Y * 0.032)), 0), params)
-	
-						if ray and ray.Material == Enum.Material.Water then
-							Platform.CFrame = CFrame.new(ray.Position)
-						else
-							Platform.CFrame = CFrame.new(10000, 10000, 10000)
-						end
-					end
-				end))
-			end
-		end,
-		Tooltip = 'Allow you to stand on terrain water'
 	})
 end)
 	
@@ -4482,68 +4362,6 @@ run(function()
 end)
 	
 run(function()
-	local Fullbright
-	local Mode
-	local oldsettings = {}
-	local flag
-	
-	local function ChangeLighting(prop)
-		if flag then
-			return
-		end
-	
-		flag = true
-		lightingService.Ambient = Color3.new(1, 1, 1)
-		lightingService.OutdoorAmbient = Color3.new(1, 1, 1)
-		lightingService.Brightness = 3
-		runService.RenderStepped:Wait()
-		flag = false
-	end
-	
-	Fullbright = vape.Categories.Render:CreateModule({
-		Name = 'Full bright',
-		Function = function(callback)
-			if callback then
-				if Mode.Value == 'Lighting' then
-					for _, v in {'Ambient', 'OutdoorAmbient', 'Brightness'} do
-						oldsettings[v] = lightingService[v]
-					end
-	
-					Fullbright:Clean(lightingService.Changed:Connect(ChangeLighting))
-					task.spawn(ChangeLighting)
-				else
-					local inst = Instance.new('PointLight')
-					inst.Range = 1000
-					Fullbright:Clean(inst)
-	
-					repeat
-						inst.Parent = entitylib.isAlive and entitylib.character.RootPart or nil
-						task.wait(0.1)
-					until not Fullbright.Enabled
-				end
-			else
-				flag = false
-				for i, v in oldsettings do
-					lightingService[i] = v
-				end
-				table.clear(oldsettings)
-			end
-		end,
-		Tooltip = 'Increase the lighting of the world around you.'
-	})
-	Mode = Fullbright:CreateDropdown({
-		Name = 'Mode',
-		List = {'Lighting', 'PointLight'},
-		Function = function()
-			if Fullbright.Enabled then
-				Fullbright:Toggle()
-				Fullbright:Toggle()
-			end
-		end
-	})
-end)
-	
-run(function()
 	local GamingChair = {Enabled = false}
 	local Color
 	local wheelpositions = {
@@ -6318,90 +6136,6 @@ run(function()
 end)
 	
 run(function()
-	local ChatSpammer
-	local Lines
-	local Mode
-	local Delay
-	local Hide
-	local oldchat
-	
-	ChatSpammer = vape.Categories.Utility:CreateModule({
-		Name = 'Chat Spammer',
-		Function = function(callback)
-			if callback then
-				if textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-					if Hide.Enabled and coreGui:FindFirstChild('ExperienceChat') then
-						ChatSpammer:Clean(coreGui.ExperienceChat:FindFirstChild('RCTScrollContentView', true).ChildAdded:Connect(function(msg)
-							if msg.Name:sub(1, 2) == '0-' and msg.ContentText == 'You must wait before sending another message.' then
-								msg.Visible = false
-							end
-						end))
-					end
-				elseif replicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
-					if Hide.Enabled then
-						oldchat = hookfunction(getconnections(replicatedStorage.DefaultChatSystemChatEvents.OnNewSystemMessage.OnClientEvent)[1].Function, function(data, ...)
-							if data.Message:find('ChatFloodDetector') then return end
-							return oldchat(data, ...)
-						end)
-					end
-				else
-					notif('ChatSpammer', 'unsupported chat', 5, 'warning')
-					ChatSpammer:Toggle()
-					return
-				end
-				
-				local ind = 1
-				repeat
-					local message = (#Lines.ListEnabled > 0 and Lines.ListEnabled[math.random(1, #Lines.ListEnabled)] or 'vxpe on top')
-					if Mode.Value == 'Order' and #Lines.ListEnabled > 0 then
-						message = Lines.ListEnabled[ind] or Lines.ListEnabled[1]
-						ind = (ind % #Lines.ListEnabled) + 1
-					end
-	
-					if textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-						textChatService.ChatInputBarConfiguration.TargetTextChannel:SendAsync(message)
-					else
-						replicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(message, 'All')
-					end
-	
-					task.wait(Delay.Value)
-				until not ChatSpammer.Enabled
-			else
-				if oldchat then
-					hookfunction(getconnections(replicatedStorage.DefaultChatSystemChatEvents.OnNewSystemMessage.OnClientEvent)[1].Function, oldchat)
-				end
-			end
-		end,
-		Tooltip = 'Automatically types in chat'
-	})
-	Lines = ChatSpammer:CreateTextList({Name = 'Lines'})
-	Mode = ChatSpammer:CreateDropdown({
-		Name = 'Mode',
-		List = {'Random', 'Order'}
-	})
-	Delay = ChatSpammer:CreateSlider({
-		Name = 'Delay',
-		Min = 0.1,
-		Max = 10,
-		Default = 1,
-		Decimal = 10,
-		Suffix = function(val)
-			return val == 1 and 'second' or 'seconds'
-		end
-	})
-	Hide = ChatSpammer:CreateToggle({
-		Name = 'Hide Flood Message',
-		Default = true,
-		Function = function()
-			if ChatSpammer.Enabled then
-				ChatSpammer:Toggle()
-				ChatSpammer:Toggle()
-			end
-		end
-	})
-end)
-	
-run(function()
 	local Disabler
 	
 	local function characterAdded(char)
@@ -6634,48 +6368,6 @@ run(function()
 	Role = StaffDetector:CreateTextBox({
 		Name = 'Role',
 		Placeholder = 'Role Rank'
-	})
-end)
-	
-run(function()
-	local StateSpoofer
-	local State
-	local hook
-	
-	StateSpoofer = vape.Categories.Utility:CreateModule({
-		Name = 'State Spoofer',
-		Function = function(callback)
-			if callback then
-				if not rakNetCheck('StateSpoofer') then
-					StateSpoofer:Toggle()
-					return
-				end
-	
-				hook = function(packet)
-					if packet.AsArray[1] == 0x1b then
-						local data = packet.AsBuffer
-						buffer.writeu8(data, 25, Enum.HumanoidStateType[State.Value].Value + 32)
-						packet:SetData(data)
-					end
-				end
-	
-				raknet.add_send_hook(hook)
-			elseif hook then
-				raknet.remove_send_hook(hook)
-				hook = nil
-			end
-		end,
-		Tooltip = 'Spoof humanoid states on the server.'
-	})
-	local states = {}
-	for _, v in Enum.HumanoidStateType:GetEnumItems() do
-		if v.Name ~= 'None' then
-			table.insert(states, v.Name)
-		end
-	end
-	State = StateSpoofer:CreateDropdown({
-		Name = 'Humanoid State',
-		List = states
 	})
 end)
 
