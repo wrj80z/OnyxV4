@@ -1,4 +1,5 @@
 local Headers = ... or {}
+repeat task.wait() until game:IsLoaded()
 local vape = shared.vape
 local loadstr = clonefunction(loadstring)
 getgenv().oldloadstring = loadstr
