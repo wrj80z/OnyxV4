@@ -14,7 +14,7 @@
 ## Contacts
 [Discord](https://discord.gg/2aq92raYfV)
 <br/>
-My Discord Username - siryed
+My Discord Username - soryedk
 
 ## Usage
 1. Download the specific scripting utility of your choice.
